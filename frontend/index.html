@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>دبلجة — تطبيق دبلجة أصوات الألعاب مجاناً</title>
+<meta name="description" content="حوّل النص إلى صوت، دبلج الملفات الصوتية، وطبّق تأثيرات الشخصيات مجاناً." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="config.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Cairo', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: {
+            50:  '#f0f8ff',
+            100: '#dcecff',
+            400: '#4a90ff',
+            500: '#2f73f2',
+            600: '#1f5bd8',
+            700: '#1848a8',
+            900: '#0b234d',
+          },
+          ink:   '#0f172a',
+          panel: '#0b1220',
+          card:  '#121a2c',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  html, body { font-family: 'Cairo', system-ui, sans-serif; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(47,115,242,.25), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(140,69,255,.20), transparent 60%),
+      linear-gradient(180deg, #070b17 0%, #0b1120 100%);
+    color: #e6edf7;
+    min-height: 100vh;
+  }
+  .glass {
+    background: rgba(18,26,44,.8);
+    border: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(10px);
+  }
+  .tab-active {
+    background: linear-gradient(135deg, #2f73f2 0%, #6a5bff 100%);
+    color: white;
+    box-shadow: 0 8px 24px rgba(47,115,242,.35);
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #2f73f2, #6a5bff);
+    color: white;
+    transition: transform .1s ease, box-shadow .2s ease, opacity .2s ease;
+  }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(47,115,242,.35); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .input, select, textarea {
+    background: rgba(9,14,25,.8);
+    border: 1px solid rgba(255,255,255,.1);
+    color: #e6edf7;
+  }
+  .input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #4a90ff;
+    box-shadow: 0 0 0 3px rgba(74,144,255,.25);
+  }
+  .chip {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    transition: all .15s ease;
+  }
+  .chip:hover { background: rgba(74,144,255,.15); border-color: rgba(74,144,255,.5); }
+  .chip.selected {
+    background: linear-gradient(135deg, rgba(47,115,242,.35), rgba(106,91,255,.35));
+    border-color: #4a90ff;
+    color: white;
+  }
+  /* Animated loader */
+  .loader {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.3); border-top-color: #fff;
+    animation: spin 0.8s linear infinite;
+    display: inline-block; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  audio { width: 100%; }
+  audio::-webkit-media-controls-panel { background-color: #0b1220; }
+  /* Drag-drop */
+  .dropzone {
+    border: 2px dashed rgba(255,255,255,.2);
+    transition: all .2s ease;
+  }
+  .dropzone.dragover {
+    border-color: #4a90ff;
+    background: rgba(47,115,242,.1);
+  }
+</style>
+</head>
+<body>
+
+<header class="py-6 px-4 md:px-10 flex items-center justify-between border-b border-white/5 sticky top-0 z-20 backdrop-blur bg-[rgba(7,11,23,.65)]">
+  <div class="flex items-center gap-3">
+    <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500 to-purple-500 grid place-items-center text-xl font-black">د</div>
+    <div>
+      <h1 class="text-xl md:text-2xl font-black tracking-tight">دبلجة</h1>
+      <p class="text-xs text-white/60">تطبيق دبلجة أصوات الألعاب — مجاني بالكامل</p>
+    </div>
+  </div>
+  <div class="hidden md:flex items-center gap-2 text-sm">
+    <span id="api-badge" class="chip px-3 py-1.5 rounded-full">API: جاري الاتصال…</span>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto p-4 md:p-10">
+
+  <!-- Hero -->
+  <section class="mb-8">
+    <h2 class="text-2xl md:text-4xl font-black leading-tight">
+      دبلج، ترجم، وطبّق تأثيرات الشخصيات <span class="bg-gradient-to-l from-brand-400 to-purple-400 bg-clip-text text-transparent">بدون تكلفة.</span>
+    </h2>
+    <p class="text-white/70 mt-3 max-w-2xl">
+      حوّل النص إلى صوت بلغات متعددة، ادبلج ملفاتك الصوتية من لغة لأخرى تلقائياً، أو طبّق تأثيرات صوتية للشخصيات مثل الروبوت والوحش والعملاق.
+    </p>
+  </section>
+
+  <!-- Tabs -->
+  <nav class="flex flex-wrap gap-2 mb-6">
+    <button data-tab="tts"    class="tab-btn px-5 py-3 rounded-xl font-bold text-sm md:text-base chip">
+      <span class="inline-block ml-1">🗣️</span> نص إلى صوت
+    </button>
+    <button data-tab="dub"    class="tab-btn px-5 py-3 rounded-xl font-bold text-sm md:text-base chip">
+      <span class="inline-block ml-1">🎙️</span> دبلجة ملف صوتي
+    </button>
+    <button data-tab="effect" class="tab-btn px-5 py-3 rounded-xl font-bold text-sm md:text-base chip">
+      <span class="inline-block ml-1">🎭</span> تأثيرات الشخصيات
+    </button>
+  </nav>
+
+  <!-- ============= TAB: TTS ============= -->
+  <section id="tab-tts" class="tab-panel glass rounded-2xl p-6 md:p-8 space-y-5">
+    <h3 class="text-xl font-bold">نص إلى صوت</h3>
+    <p class="text-white/60 text-sm">اكتب النص، اختر الصوت، واحصل على ملف MP3.</p>
+
+    <div>
+      <label class="block text-sm font-bold mb-2">النص</label>
+      <textarea id="tts-text" rows="4" class="input w-full rounded-xl p-4 text-base leading-loose"
+        placeholder="اكتب ما تريد تحويله إلى صوت…">مرحباً! هذا تطبيق دبلجة الأصوات، جرب الأصوات المختلفة واستمتع.</textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-bold mb-2">اختر الصوت / اللهجة</label>
+      <div id="voice-grid" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <button id="tts-btn" class="btn-primary px-6 py-3 rounded-xl font-bold">
+        <span class="btn-label">🎵 إنشاء الصوت</span>
+      </button>
+      <a id="tts-download" class="hidden chip px-4 py-3 rounded-xl font-bold text-sm" download="dublaja.mp3">⬇️ تحميل MP3</a>
+      <span id="tts-status" class="text-white/60 text-sm"></span>
+    </div>
+
+    <audio id="tts-audio" controls class="hidden rounded-xl"></audio>
+  </section>
+
+  <!-- ============= TAB: DUB ============= -->
+  <section id="tab-dub" class="tab-panel glass rounded-2xl p-6 md:p-8 space-y-5 hidden">
+    <h3 class="text-xl font-bold">دبلجة ملف صوتي</h3>
+    <p class="text-white/60 text-sm">
+      ارفع ملفاً صوتياً (MP3/WAV/M4A/OGG) وسنحوّله إلى نص، ثم نترجمه للغة الهدف، ونعيد نطقه بصوت جديد.
+    </p>
+
+    <label id="dub-dropzone" class="dropzone block rounded-2xl p-8 text-center cursor-pointer">
+      <input id="dub-file" type="file" accept="audio/*" class="hidden" />
+      <div class="text-5xl mb-2">🎙️</div>
+      <p class="font-bold">اسحب الملف هنا أو اضغط للاختيار</p>
+      <p class="text-white/50 text-sm mt-1" id="dub-filename">لم يتم اختيار ملف</p>
+    </label>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-bold mb-2">اللغة في الملف (المصدر)</label>
+        <select id="dub-source" class="input w-full rounded-xl p-3"></select>
+      </div>
+      <div>
+        <label class="block text-sm font-bold mb-2">اللغة الهدف (الدبلجة)</label>
+        <select id="dub-target" class="input w-full rounded-xl p-3"></select>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-bold mb-2">صوت الدبلجة</label>
+      <div id="dub-voice-grid" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <button id="dub-btn" class="btn-primary px-6 py-3 rounded-xl font-bold">
+        <span class="btn-label">🚀 دبلج الآن</span>
+      </button>
+      <span id="dub-status" class="text-white/60 text-sm"></span>
+    </div>
+
+    <div id="dub-result" class="hidden space-y-4 border-t border-white/10 pt-5">
+      <div>
+        <p class="text-xs font-bold text-white/50 mb-1">النص المستخرج من الملف:</p>
+        <p id="dub-transcript" class="bg-black/20 rounded-xl p-3 text-white/90 leading-loose"></p>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-white/50 mb-1">الترجمة:</p>
+        <p id="dub-translation" class="bg-black/20 rounded-xl p-3 text-white/90 leading-loose"></p>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-white/50 mb-1">الملف المدبلج:</p>
+        <audio id="dub-audio" controls class="rounded-xl"></audio>
+        <a id="dub-download" class="inline-block mt-2 chip px-4 py-2 rounded-xl font-bold text-sm" download="dublaja-dubbed.mp3">⬇️ تحميل MP3</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============= TAB: EFFECT ============= -->
+  <section id="tab-effect" class="tab-panel glass rounded-2xl p-6 md:p-8 space-y-5 hidden">
+    <h3 class="text-xl font-bold">تأثيرات صوت الشخصيات</h3>
+    <p class="text-white/60 text-sm">ارفع ملفاً صوتياً وطبّق عليه تأثير شخصية اللعبة.</p>
+
+    <label id="fx-dropzone" class="dropzone block rounded-2xl p-8 text-center cursor-pointer">
+      <input id="fx-file" type="file" accept="audio/*" class="hidden" />
+      <div class="text-5xl mb-2">🎭</div>
+      <p class="font-bold">اسحب الملف هنا أو اضغط للاختيار</p>
+      <p class="text-white/50 text-sm mt-1" id="fx-filename">لم يتم اختيار ملف</p>
+    </label>
+
+    <div>
+      <label class="block text-sm font-bold mb-2">اختر التأثير</label>
+      <div id="fx-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2"></div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <button id="fx-btn" class="btn-primary px-6 py-3 rounded-xl font-bold">
+        <span class="btn-label">🎛️ طبّق التأثير</span>
+      </button>
+      <span id="fx-status" class="text-white/60 text-sm"></span>
+    </div>
+
+    <audio id="fx-audio" controls class="hidden rounded-xl"></audio>
+    <a id="fx-download" class="hidden chip px-4 py-2 rounded-xl font-bold text-sm" download="dublaja-effect.mp3">⬇️ تحميل MP3</a>
+  </section>
+
+  <footer class="mt-10 text-center text-white/40 text-xs">
+    مبني مجاناً باستخدام gTTS و deep-translator و SpeechRecognition و pydub.
+    <br />
+    <span id="api-url" class="font-mono"></span>
+  </footer>
+</main>
+
+<script>
+// ---------------------------------------------------------------- API setup
+const DEFAULT_API = 'http://localhost:8001';
+const API = (window.__API_URL__) || localStorage.getItem('dublaja_api') || DEFAULT_API;
+document.getElementById('api-url').textContent = API;
+
+async function checkAPI() {
+  const badge = document.getElementById('api-badge');
+  try {
+    const r = await fetch(`${API}/healthz`);
+    if (r.ok) { badge.textContent = 'API: متصل ✓'; badge.classList.add('!bg-emerald-500/20','!border-emerald-400/40'); }
+    else throw 0;
+  } catch {
+    badge.textContent = 'API: غير متصل ✗';
+    badge.classList.add('!bg-red-500/20','!border-red-400/40');
+  }
+}
+checkAPI();
+
+// ---------------------------------------------------------------- Tabs
+const tabs = document.querySelectorAll('.tab-btn');
+tabs.forEach(btn => btn.addEventListener('click', () => {
+  tabs.forEach(b => b.classList.remove('tab-active'));
+  btn.classList.add('tab-active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+  document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+}));
+tabs[0].click();
+
+// ---------------------------------------------------------------- Voices
+const VOICES = [
+  { id: 'arabic_default',    label: '🇸🇦 عربي',           },
+  { id: 'arabic_slow',       label: '🇸🇦 عربي (بطيء)',    },
+  { id: 'english_us',        label: '🇺🇸 إنجليزي أمريكي', },
+  { id: 'english_uk',        label: '🇬🇧 إنجليزي بريطاني',},
+  { id: 'english_australia', label: '🇦🇺 إنجليزي أسترالي',},
+  { id: 'english_india',     label: '🇮🇳 إنجليزي هندي',   },
+  { id: 'french',            label: '🇫🇷 فرنسي',          },
+  { id: 'spanish',           label: '🇪🇸 إسباني',         },
+  { id: 'german',            label: '🇩🇪 ألماني',         },
+  { id: 'turkish',           label: '🇹🇷 تركي',           },
+  { id: 'japanese',          label: '🇯🇵 ياباني',         },
+  { id: 'character_robot',   label: '🤖 روبوت',            },
+  { id: 'character_monster', label: '👹 وحش',             },
+  { id: 'character_child',   label: '👶 طفل',             },
+  { id: 'character_giant',   label: '🦍 عملاق',           },
+  { id: 'character_echo',    label: '🌀 صدى',             },
+];
+
+function renderVoiceGrid(containerId, stateRef, defaultId = 'arabic_default') {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  VOICES.forEach(v => {
+    const btn = document.createElement('button');
+    btn.className = 'chip px-3 py-2 rounded-xl text-sm font-bold';
+    btn.textContent = v.label;
+    btn.onclick = () => {
+      stateRef.value = v.id;
+      el.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
+    if (v.id === defaultId) { btn.classList.add('selected'); stateRef.value = v.id; }
+    el.appendChild(btn);
+  });
+}
+
+const ttsVoice = { value: 'arabic_default' };
+const dubVoice = { value: 'arabic_default' };
+renderVoiceGrid('voice-grid', ttsVoice);
+renderVoiceGrid('dub-voice-grid', dubVoice);
+
+// ---------------------------------------------------------------- Languages
+const LANGS = [
+  ['auto', 'كشف تلقائي'],
+  ['ar', '🇸🇦 العربية'],
+  ['en', '🇺🇸 English'],
+  ['fr', '🇫🇷 Français'],
+  ['es', '🇪🇸 Español'],
+  ['de', '🇩🇪 Deutsch'],
+  ['it', '🇮🇹 Italiano'],
+  ['pt', '🇵🇹 Português'],
+  ['ru', '🇷🇺 Русский'],
+  ['tr', '🇹🇷 Türkçe'],
+  ['ja', '🇯🇵 日本語'],
+  ['ko', '🇰🇷 한국어'],
+  ['zh', '🇨🇳 中文'],
+  ['hi', '🇮🇳 हिन्दी'],
+  ['ur', '🇵🇰 اردو'],
+];
+
+function fillLangSelect(id, defaultVal, includeAuto = true) {
+  const sel = document.getElementById(id);
+  sel.innerHTML = '';
+  LANGS.forEach(([code, name]) => {
+    if (!includeAuto && code === 'auto') return;
+    const opt = document.createElement('option');
+    opt.value = code; opt.textContent = name;
+    if (code === defaultVal) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+fillLangSelect('dub-source', 'auto', true);
+fillLangSelect('dub-target', 'ar', false);
+
+// ---------------------------------------------------------------- Effects
+const EFFECTS = [
+  { id: 'robot',    label: '🤖 روبوت' },
+  { id: 'monster',  label: '👹 وحش' },
+  { id: 'demon',    label: '😈 شيطان' },
+  { id: 'child',    label: '👶 طفل' },
+  { id: 'chipmunk', label: '🐿️ سنجاب' },
+  { id: 'giant',    label: '🦍 عملاق' },
+  { id: 'echo',     label: '🌀 صدى' },
+];
+const fxEffect = { value: 'robot' };
+(function renderFx() {
+  const el = document.getElementById('fx-grid');
+  el.innerHTML = '';
+  EFFECTS.forEach(fx => {
+    const btn = document.createElement('button');
+    btn.className = 'chip px-3 py-3 rounded-xl text-sm font-bold';
+    btn.textContent = fx.label;
+    btn.onclick = () => {
+      fxEffect.value = fx.id;
+      el.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
+    if (fx.id === 'robot') btn.classList.add('selected');
+    el.appendChild(btn);
+  });
+})();
+
+// ---------------------------------------------------------------- Dropzones
+function setupDropzone(zoneId, inputId, nameId) {
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  const name = document.getElementById(nameId);
+  const update = () => name.textContent = input.files[0] ? input.files[0].name : 'لم يتم اختيار ملف';
+  input.addEventListener('change', update);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; update(); }
+  });
+}
+setupDropzone('dub-dropzone', 'dub-file', 'dub-filename');
+setupDropzone('fx-dropzone', 'fx-file', 'fx-filename');
+
+// ---------------------------------------------------------------- Helpers
+function setLoading(btnEl, loading, normalLabel) {
+  const lbl = btnEl.querySelector('.btn-label');
+  btnEl.disabled = loading;
+  lbl.innerHTML = loading ? '<span class="loader"></span> جاري المعالجة…' : normalLabel;
+}
+
+// ---------------------------------------------------------------- TTS action
+document.getElementById('tts-btn').onclick = async () => {
+  const btn = document.getElementById('tts-btn');
+  const status = document.getElementById('tts-status');
+  const audio = document.getElementById('tts-audio');
+  const dl = document.getElementById('tts-download');
+  const text = document.getElementById('tts-text').value.trim();
+  if (!text) { status.textContent = 'اكتب نصاً أولاً.'; return; }
+  setLoading(btn, true, '🎵 إنشاء الصوت');
+  status.textContent = '';
+  try {
+    const form = new FormData();
+    form.append('text', text);
+    form.append('voice', ttsVoice.value);
+    const r = await fetch(`${API}/api/tts/voice`, { method: 'POST', body: form });
+    if (!r.ok) throw new Error((await r.json()).detail || 'خطأ');
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    audio.src = url; audio.classList.remove('hidden');
+    dl.href = url; dl.classList.remove('hidden');
+    status.textContent = 'تم! ✓';
+  } catch (e) {
+    status.textContent = 'خطأ: ' + e.message;
+  } finally {
+    setLoading(btn, false, '🎵 إنشاء الصوت');
+  }
+};
+
+// ---------------------------------------------------------------- Dub action
+document.getElementById('dub-btn').onclick = async () => {
+  const btn = document.getElementById('dub-btn');
+  const status = document.getElementById('dub-status');
+  const fileInput = document.getElementById('dub-file');
+  if (!fileInput.files[0]) { status.textContent = 'اختر ملفاً أولاً.'; return; }
+
+  setLoading(btn, true, '🚀 دبلج الآن');
+  status.textContent = 'جاري الرفع والتحليل… قد يأخذ بضع ثوانٍ';
+  try {
+    const form = new FormData();
+    form.append('file', fileInput.files[0]);
+    form.append('source_lang', document.getElementById('dub-source').value);
+    form.append('target_lang', document.getElementById('dub-target').value);
+    form.append('voice', dubVoice.value);
+    const r = await fetch(`${API}/api/dub`, { method: 'POST', body: form });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.detail || `خطأ ${r.status}`);
+    }
+    const data = await r.json();
+    document.getElementById('dub-transcript').textContent = data.transcript;
+    document.getElementById('dub-translation').textContent = data.translation;
+    const src = `data:${data.mime};base64,${data.audio_base64}`;
+    document.getElementById('dub-audio').src = src;
+    document.getElementById('dub-download').href = src;
+    document.getElementById('dub-result').classList.remove('hidden');
+    status.textContent = 'تمت الدبلجة ✓';
+  } catch (e) {
+    status.textContent = 'خطأ: ' + e.message;
+  } finally {
+    setLoading(btn, false, '🚀 دبلج الآن');
+  }
+};
+
+// ---------------------------------------------------------------- Effect action
+document.getElementById('fx-btn').onclick = async () => {
+  const btn = document.getElementById('fx-btn');
+  const status = document.getElementById('fx-status');
+  const fileInput = document.getElementById('fx-file');
+  if (!fileInput.files[0]) { status.textContent = 'اختر ملفاً أولاً.'; return; }
+
+  setLoading(btn, true, '🎛️ طبّق التأثير');
+  status.textContent = '';
+  try {
+    const form = new FormData();
+    form.append('file', fileInput.files[0]);
+    form.append('effect', fxEffect.value);
+    const r = await fetch(`${API}/api/effect`, { method: 'POST', body: form });
+    if (!r.ok) throw new Error((await r.json()).detail || 'خطأ');
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = document.getElementById('fx-audio');
+    const dl = document.getElementById('fx-download');
+    audio.src = url; audio.classList.remove('hidden');
+    dl.href = url; dl.classList.remove('hidden');
+    status.textContent = 'تم التطبيق ✓';
+  } catch (e) {
+    status.textContent = 'خطأ: ' + e.message;
+  } finally {
+    setLoading(btn, false, '🎛️ طبّق التأثير');
+  }
+};
+</script>
+</body>
+</html>
