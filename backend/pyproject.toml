@@ -12,6 +12,7 @@ fastapi = {extras = ["standard"], version = "^0.115.0"}
 uvicorn = {extras = ["standard"], version = "^0.32.0"}
 python-multipart = "^0.0.12"
 gtts = "^2.5.3"
+edge-tts = "^7.0.0"
 deep-translator = "^1.11.4"
 SpeechRecognition = "^3.10.4"
 pydub = "^0.25.1"

@@ -125,7 +125,7 @@
       دبلج شخصيات الألعاب <span class="bg-gradient-to-l from-brand-400 to-purple-400 bg-clip-text text-transparent">بدون تكلفة.</span>
     </h2>
     <p class="text-white/70 mt-3 max-w-2xl">
-      حوّل النص إلى صوت بشخصيات من <span class="text-brand-400 font-bold">زيلدا</span> (لينك، غانون، زيلدا، شيك، غورون، زورا، ريتو، في، ميدنا…) وشخصيات ألعاب أخرى (بطل، ساحر، تنين، شبح، فارس…)، أو ادبلج ملفاتك الصوتية بين اللغات تلقائياً.
+      أصوات <span class="text-brand-400 font-bold">عصبية طبيعية</span> (Microsoft Edge Neural TTS) لشخصيات <span class="text-brand-400 font-bold">زيلدا</span> (لينك، غانون، زيلدا، شيك، في، ميدنا…) وشخصيات ألعاب أخرى (بطل، ساحر، تنين، شبح، فارس…). أصوات ذكور وإناث حقيقية، بدون روبوتية أو صدى مبالغ.
     </p>
   </section>
 
@@ -288,12 +288,17 @@ tabs.forEach(btn => btn.addEventListener('click', () => {
 tabs[0].click();
 
 // ---------------------------------------------------------------- Voices
-// Regular language/accent voices
+// Regular language/accent voices (Edge Neural — high quality)
 const LANG_VOICES = [
-  { id: 'arabic_default',    label: '🇸🇦 عربي' },
+  { id: 'arabic_default',    label: '🇸🇦 عربي (أنثى)' },
+  { id: 'arabic_male',       label: '🇸🇦 عربي (ذكر)' },
+  { id: 'arabic_egypt_f',    label: '🇪🇬 عربي مصري (أنثى)' },
+  { id: 'arabic_egypt_m',    label: '🇪🇬 عربي مصري (ذكر)' },
   { id: 'arabic_slow',       label: '🇸🇦 عربي (بطيء)' },
-  { id: 'english_us',        label: '🇺🇸 إنجليزي أمريكي' },
-  { id: 'english_uk',        label: '🇬🇧 إنجليزي بريطاني' },
+  { id: 'english_us',        label: '🇺🇸 إنجليزي أمريكي (أنثى)' },
+  { id: 'english_us_male',   label: '🇺🇸 إنجليزي أمريكي (ذكر)' },
+  { id: 'english_uk',        label: '🇬🇧 إنجليزي بريطاني (أنثى)' },
+  { id: 'english_uk_male',   label: '🇬🇧 إنجليزي بريطاني (ذكر)' },
   { id: 'english_australia', label: '🇦🇺 إنجليزي أسترالي' },
   { id: 'english_india',     label: '🇮🇳 إنجليزي هندي' },
   { id: 'french',            label: '🇫🇷 فرنسي' },
