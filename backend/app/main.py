@@ -18,6 +18,30 @@ import tempfile
 import uuid
 from typing import Literal
 
+
+def _load_env_file(path: str) -> None:
+    """Tiny .env loader (no dependency). Lines like KEY=VALUE; ignores blanks/comments."""
+    if not os.path.isfile(path):
+        return
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for raw in f:
+                line = raw.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, _, val = line.partition("=")
+                key = key.strip()
+                val = val.strip().strip("'").strip('"')
+                if key and key not in os.environ:
+                    os.environ[key] = val
+    except Exception as exc:  # pragma: no cover
+        print(f"[warn] failed to load env file {path}: {exc}")
+
+
+# Load .env from CWD or /app at import time so downstream modules see vars.
+for _envp in (".env", "/app/.env"):
+    _load_env_file(_envp)
+
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse

@@ -24,5 +24,9 @@ RUN poetry install --no-root --without dev || poetry install --no-root
 COPY app /app/app
 COPY README.md /app/README.md
 
+# Optional: bundle a local .env file (gitignored) for runtime secrets
+# (e.g. FISH_AUDIO_API_KEY). The file is loaded by app/main.py at startup.
+COPY .env* /app/
+
 EXPOSE 8000
 CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
