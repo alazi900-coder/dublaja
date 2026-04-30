@@ -40,6 +40,12 @@ import speech_recognition as sr
 from pydub import AudioSegment
 from pydub.effects import speedup
 
+from app.fish_tts import (
+    FISH_VOICE_PRESETS,
+    FishAudioError,
+    synthesize_fish,
+)
+
 
 app = FastAPI(title="Dublaja API", version="0.1.0")
 
@@ -729,6 +735,16 @@ def voices():
             }
             for k, v in VOICE_PRESETS.items()
         ],
+        "fish_voices": [
+            {
+                "id": k,
+                "reference_id": v.get("reference_id"),
+                "model": v.get("model", "s2-pro"),
+                "speed": v.get("speed", 1.0),
+            }
+            for k, v in FISH_VOICE_PRESETS.items()
+        ],
+        "fish_enabled": bool(os.environ.get("FISH_AUDIO_API_KEY", "").strip()),
         "effects": EFFECTS,
     }
 
@@ -752,6 +768,89 @@ def api_tts_voice(text: str = Form(...), voice: str = Form("arabic_default")):
         effect=preset.get("effect"),
     )
     return StreamingResponse(io.BytesIO(data), media_type="audio/mpeg")
+
+
+@app.post("/api/tts/fish")
+def api_tts_fish(
+    text: str = Form(...),
+    voice: str | None = Form(None),
+    reference_id: str | None = Form(None),
+    model: str = Form("s2-pro"),
+    speed: float = Form(1.0),
+    temperature: float = Form(0.7),
+    top_p: float = Form(0.7),
+):
+    """
+    Fish Audio TTS — premium quality + voice cloning via preset.
+
+    - `voice`: preset key from /api/voices fish_voices (e.g. fish_zelda_link)
+    - `reference_id`: Fish Audio model UUID (overrides preset's reference_id)
+    """
+    preset_speed = speed
+    preset_temp = temperature
+    preset_top_p = top_p
+    preset_model = model
+    ref_id = reference_id
+
+    if voice and voice in FISH_VOICE_PRESETS:
+        p = FISH_VOICE_PRESETS[voice]
+        ref_id = ref_id or p.get("reference_id")
+        preset_model = p.get("model", model)
+        preset_speed = p.get("speed", speed)
+        preset_temp = p.get("temperature", temperature)
+        preset_top_p = p.get("top_p", top_p)
+
+    try:
+        mp3 = synthesize_fish(
+            text,
+            reference_id=ref_id,
+            model=preset_model,
+            speed=preset_speed,
+            temperature=preset_temp,
+            top_p=preset_top_p,
+        )
+    except FishAudioError as e:
+        raise HTTPException(e.status, e.message)
+
+    return StreamingResponse(io.BytesIO(mp3), media_type="audio/mpeg")
+
+
+@app.post("/api/tts/fish/clone")
+async def api_tts_fish_clone(
+    text: str = Form(...),
+    reference_audio: UploadFile = File(...),
+    reference_transcript: str = Form(...),
+    model: str = Form("s2-pro"),
+    speed: float = Form(1.0),
+    temperature: float = Form(0.7),
+    top_p: float = Form(0.7),
+):
+    """
+    Fish Audio zero-shot voice cloning.
+
+    Upload a 6-30s reference audio + its transcript -> synthesize new text in
+    the same voice (premium quality).
+    """
+    audio_bytes = await reference_audio.read()
+    if not audio_bytes:
+        raise HTTPException(400, "ملف العينة فارغ")
+    if len(audio_bytes) > 20 * 1024 * 1024:  # 20MB cap
+        raise HTTPException(400, "ملف العينة كبير جداً (>20 ميغا).")
+
+    try:
+        mp3 = synthesize_fish(
+            text,
+            reference_audio=audio_bytes,
+            reference_transcript=reference_transcript,
+            model=model,
+            speed=speed,
+            temperature=temperature,
+            top_p=top_p,
+        )
+    except FishAudioError as e:
+        raise HTTPException(e.status, e.message)
+
+    return StreamingResponse(io.BytesIO(mp3), media_type="audio/mpeg")
 
 
 @app.post("/api/translate")

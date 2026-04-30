@@ -122,28 +122,148 @@
   <!-- Hero -->
   <section class="mb-8">
     <h2 class="text-2xl md:text-4xl font-black leading-tight">
-      دبلج شخصيات الألعاب <span class="bg-gradient-to-l from-brand-400 to-purple-400 bg-clip-text text-transparent">بدون تكلفة.</span>
+      دبلج شخصيات الألعاب <span class="bg-gradient-to-l from-brand-400 to-purple-400 bg-clip-text text-transparent">بجودة استوديو.</span>
     </h2>
     <p class="text-white/70 mt-3 max-w-2xl">
-      أصوات <span class="text-brand-400 font-bold">عصبية طبيعية</span> (Microsoft Edge Neural TTS) لشخصيات <span class="text-brand-400 font-bold">زيلدا</span> (لينك، غانون، زيلدا، شيك، في، ميدنا…) وشخصيات ألعاب أخرى (بطل، ساحر، تنين، شبح، فارس…). أصوات ذكور وإناث حقيقية، بدون روبوتية أو صدى مبالغ.
+      <span class="text-amber-300 font-bold">جديد ⭐</span> — تبويبات <span class="text-amber-300 font-bold">Fish Premium</span> للأصوات الاحترافية و<span class="text-amber-300 font-bold">استنساخ الأصوات</span> (ارفع عينة → ينطق بنفس الصوت). بجانب أصوات عصبية مجانية (Edge TTS) لشخصيات زيلدا والألعاب.
     </p>
+    <div id="fish-status-banner" class="hidden mt-4 rounded-xl border border-amber-400/40 bg-amber-500/10 p-4 text-amber-100 text-sm">
+      <strong>⚠️ Fish Premium غير مُفعَّل بعد:</strong> اشحن $5 في حسابك على
+      <a href="https://fish.audio/wallet" target="_blank" class="underline font-bold">fish.audio/wallet</a>
+      لتفعيل الجودة الاحترافية فوراً (بدون أي خطوة إضافية منك بعد الشحن).
+    </div>
   </section>
 
   <!-- Tabs -->
   <nav class="flex flex-wrap gap-2 mb-6">
+    <button data-tab="fish"   class="tab-btn px-5 py-3 rounded-xl font-bold text-sm md:text-base chip">
+      <span class="inline-block ml-1">⭐</span> Fish Premium
+    </button>
+    <button data-tab="clone"  class="tab-btn px-5 py-3 rounded-xl font-bold text-sm md:text-base chip">
+      <span class="inline-block ml-1">🎭</span> استنساخ صوت
+    </button>
     <button data-tab="tts"    class="tab-btn px-5 py-3 rounded-xl font-bold text-sm md:text-base chip">
-      <span class="inline-block ml-1">🗣️</span> نص إلى صوت
+      <span class="inline-block ml-1">🗣️</span> نص إلى صوت (مجاني)
     </button>
     <button data-tab="dub"    class="tab-btn px-5 py-3 rounded-xl font-bold text-sm md:text-base chip">
       <span class="inline-block ml-1">🎙️</span> دبلجة ملف صوتي
     </button>
     <button data-tab="effect" class="tab-btn px-5 py-3 rounded-xl font-bold text-sm md:text-base chip">
-      <span class="inline-block ml-1">🎭</span> تأثيرات الشخصيات
+      <span class="inline-block ml-1">🎛️</span> تأثيرات
     </button>
   </nav>
 
+  <!-- ============= TAB: FISH PREMIUM ============= -->
+  <section id="tab-fish" class="tab-panel glass rounded-2xl p-6 md:p-8 space-y-5 hidden">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h3 class="text-xl font-bold">⭐ Fish Audio Premium — جودة الاستوديو</h3>
+        <p class="text-white/60 text-sm mt-1">أصوات احترافية بنفس جودة العينات على fish.audio. مدفوع باستهلاك صغير ($5 = ~330,000 حرف).</p>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-bold mb-2">النص</label>
+      <textarea id="fish-text" rows="4" class="input w-full rounded-xl p-4 text-base leading-loose"
+        placeholder="اكتب نصاً عربياً أو إنجليزياً…">مرحباً، أنا لينك بطل هيرول. سأحمي الأميرة زيلدا من غانون.</textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-bold mb-2">اختر الشخصية</label>
+      <div id="fish-voice-grid" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+    </div>
+
+    <details class="text-sm">
+      <summary class="cursor-pointer text-white/60">⚙️ إعدادات متقدمة</summary>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+        <div>
+          <label class="block text-xs text-white/60 mb-1">السرعة (0.5 - 2.0)</label>
+          <input id="fish-speed" type="number" step="0.05" min="0.5" max="2.0" value="1.0" class="input w-full rounded-lg p-2">
+        </div>
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Temperature (0 - 1)</label>
+          <input id="fish-temp" type="number" step="0.05" min="0" max="1" value="0.7" class="input w-full rounded-lg p-2">
+        </div>
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Top P (0 - 1)</label>
+          <input id="fish-topp" type="number" step="0.05" min="0" max="1" value="0.7" class="input w-full rounded-lg p-2">
+        </div>
+        <div class="col-span-2 md:col-span-3">
+          <label class="block text-xs text-white/60 mb-1">معرّف صوت Fish مخصّص (اختياري — يستبدل الشخصية)</label>
+          <input id="fish-refid" type="text" placeholder="1f9388401ff04902894a7cbefdc0cc2d" class="input w-full rounded-lg p-2 font-mono text-xs">
+          <p class="text-xs text-white/40 mt-1">انسخ ID من رابط أي صوت في <a href="https://fish.audio" target="_blank" class="underline">fish.audio</a> (مثال: fish.audio/m/<b>VOICE_ID</b>/).</p>
+        </div>
+      </div>
+    </details>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <button id="fish-btn" class="btn-primary px-6 py-3 rounded-xl font-bold">
+        <span class="btn-label">⭐ إنشاء (Fish)</span>
+      </button>
+      <a id="fish-download" class="hidden chip px-4 py-3 rounded-xl font-bold text-sm" download="dublaja-fish.mp3">⬇️ تحميل MP3</a>
+      <span id="fish-status" class="text-white/60 text-sm"></span>
+    </div>
+
+    <audio id="fish-audio" controls class="hidden rounded-xl"></audio>
+  </section>
+
+  <!-- ============= TAB: VOICE CLONING ============= -->
+  <section id="tab-clone" class="tab-panel glass rounded-2xl p-6 md:p-8 space-y-5 hidden">
+    <div>
+      <h3 class="text-xl font-bold">🎭 استنساخ الصوت — Zero-Shot Voice Cloning</h3>
+      <p class="text-white/60 text-sm mt-1">ارفع 6-30 ثانية من أي صوت + اكتب ما يقوله الصوت في العينة، وسننطق نصاً جديداً بنفس الصوت بالضبط.</p>
+    </div>
+
+    <label id="clone-dropzone" class="dropzone block rounded-2xl p-8 text-center cursor-pointer">
+      <input id="clone-file" type="file" accept="audio/*" class="hidden" />
+      <div class="text-5xl mb-2">🎤</div>
+      <p class="font-bold">عينة الصوت المرجعي (6-30 ثانية، MP3/WAV)</p>
+      <p class="text-white/50 text-sm mt-1" id="clone-filename">اسحب أو اضغط للاختيار</p>
+    </label>
+
+    <div>
+      <label class="block text-sm font-bold mb-2">📄 نص العينة (ما يقوله الصوت في الملف بالضبط)</label>
+      <textarea id="clone-ref-text" rows="3" class="input w-full rounded-xl p-3"
+        placeholder="اكتب هنا الكلام الذي يُسمَع في الملف الصوتي…"></textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-bold mb-2">📝 النص الجديد المراد نطقه بنفس الصوت</label>
+      <textarea id="clone-text" rows="4" class="input w-full rounded-xl p-3"
+        placeholder="اكتب أي نص جديد…">مرحباً، أنا أتكلم بصوتك المستنسَخ.</textarea>
+    </div>
+
+    <details class="text-sm">
+      <summary class="cursor-pointer text-white/60">⚙️ إعدادات متقدمة</summary>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+        <div>
+          <label class="block text-xs text-white/60 mb-1">السرعة</label>
+          <input id="clone-speed" type="number" step="0.05" min="0.5" max="2.0" value="1.0" class="input w-full rounded-lg p-2">
+        </div>
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Temperature</label>
+          <input id="clone-temp" type="number" step="0.05" min="0" max="1" value="0.7" class="input w-full rounded-lg p-2">
+        </div>
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Top P</label>
+          <input id="clone-topp" type="number" step="0.05" min="0" max="1" value="0.7" class="input w-full rounded-lg p-2">
+        </div>
+      </div>
+    </details>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <button id="clone-btn" class="btn-primary px-6 py-3 rounded-xl font-bold">
+        <span class="btn-label">🎭 استنسخ الصوت</span>
+      </button>
+      <a id="clone-download" class="hidden chip px-4 py-3 rounded-xl font-bold text-sm" download="dublaja-clone.mp3">⬇️ تحميل MP3</a>
+      <span id="clone-status" class="text-white/60 text-sm"></span>
+    </div>
+
+    <audio id="clone-audio" controls class="hidden rounded-xl"></audio>
+  </section>
+
   <!-- ============= TAB: TTS ============= -->
-  <section id="tab-tts" class="tab-panel glass rounded-2xl p-6 md:p-8 space-y-5">
+  <section id="tab-tts" class="tab-panel glass rounded-2xl p-6 md:p-8 space-y-5 hidden">
     <h3 class="text-xl font-bold">نص إلى صوت</h3>
     <p class="text-white/60 text-sm">اكتب النص، اختر الصوت، واحصل على ملف MP3.</p>
 
@@ -595,6 +715,67 @@ function setupDropzone(zoneId, inputId, nameId) {
 }
 setupDropzone('dub-dropzone', 'dub-file', 'dub-filename');
 setupDropzone('fx-dropzone', 'fx-file', 'fx-filename');
+setupDropzone('clone-dropzone', 'clone-file', 'clone-filename');
+
+// ---------------------------------------------------------------- Fish premium voices
+const FISH_VOICE_GROUPS = [
+  { title: '🗡️ زيلدا — Fish Premium', items: [
+    { id: 'fish_zelda_link',     label: '🗡️ لينك (Fish)' },
+    { id: 'fish_zelda_zelda',    label: '👸 زيلدا (Fish)' },
+    { id: 'fish_zelda_ganon',    label: '🐗 غانون (Fish)' },
+    { id: 'fish_zelda_rauru',    label: '🧙 راورو (Fish)' },
+    { id: 'fish_zelda_sheik',    label: '🥷 شيك (Fish)' },
+  ]},
+  { title: '🎮 Fish — أصوات عامة للألعاب', items: [
+    { id: 'fish_arabic_default', label: '🇸🇦 عربي (افتراضي)' },
+    { id: 'fish_game_hero',      label: '🦸 بطل' },
+    { id: 'fish_game_villain',   label: '🦹 شرير' },
+    { id: 'fish_game_narrator',  label: '📖 راوي' },
+    { id: 'fish_game_wise',      label: '🧓 حكيم' },
+  ]},
+];
+const fishVoice = { value: 'fish_zelda_link' };
+
+(function renderFish() {
+  const el = document.getElementById('fish-voice-grid');
+  if (!el) return;
+  el.innerHTML = '';
+  const allButtons = [];
+  FISH_VOICE_GROUPS.forEach(group => {
+    const header = document.createElement('div');
+    header.className = 'col-span-full text-xs font-bold text-white/50 mt-2 mb-1';
+    header.textContent = group.title;
+    el.appendChild(header);
+    const grid = document.createElement('div');
+    grid.className = 'col-span-full grid grid-cols-2 md:grid-cols-3 gap-2';
+    group.items.forEach(v => {
+      const btn = document.createElement('button');
+      btn.className = 'chip px-3 py-2 rounded-xl text-sm font-bold';
+      btn.textContent = v.label;
+      btn.onclick = () => {
+        fishVoice.value = v.id;
+        allButtons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      };
+      if (v.id === fishVoice.value) btn.classList.add('selected');
+      allButtons.push(btn);
+      grid.appendChild(btn);
+    });
+    el.appendChild(grid);
+  });
+})();
+
+// Detect whether Fish is enabled on the backend
+(async function detectFish() {
+  try {
+    const r = await fetch(`${API}/api/voices`);
+    if (!r.ok) return;
+    const data = await r.json();
+    if (data.fish_enabled === false) {
+      document.getElementById('fish-status-banner').classList.remove('hidden');
+    }
+  } catch {}
+})();
 
 // ---------------------------------------------------------------- Helpers
 function setLoading(btnEl, loading, normalLabel) {
@@ -692,6 +873,93 @@ document.getElementById('fx-btn').onclick = async () => {
     status.textContent = 'خطأ: ' + e.message;
   } finally {
     setLoading(btn, false, '🎛️ طبّق التأثير');
+  }
+};
+
+// ---------------------------------------------------------------- Fish Premium action
+async function handleFishError(r) {
+  let msg = `خطأ ${r.status}`;
+  try {
+    const err = await r.json();
+    msg = err.detail || err.message || msg;
+  } catch {}
+  if (r.status === 402) {
+    document.getElementById('fish-status-banner').classList.remove('hidden');
+    return 'Fish Premium يحتاج رصيداً — اشحن $5 على fish.audio/wallet ثم أعد المحاولة.';
+  }
+  if (r.status === 401) {
+    return 'مفتاح Fish Audio API غير صالح أو غير مُعدّ على الخادم.';
+  }
+  return msg;
+}
+
+document.getElementById('fish-btn').onclick = async () => {
+  const btn = document.getElementById('fish-btn');
+  const status = document.getElementById('fish-status');
+  const audio = document.getElementById('fish-audio');
+  const dl = document.getElementById('fish-download');
+  const text = document.getElementById('fish-text').value.trim();
+  if (!text) { status.textContent = 'اكتب نصاً أولاً.'; return; }
+  setLoading(btn, true, '⭐ إنشاء (Fish)');
+  status.textContent = 'جاري التوليد… (~5-15 ثانية)';
+  try {
+    const form = new FormData();
+    form.append('text', text);
+    form.append('voice', fishVoice.value);
+    const refid = document.getElementById('fish-refid').value.trim();
+    if (refid) form.append('reference_id', refid);
+    form.append('speed', document.getElementById('fish-speed').value);
+    form.append('temperature', document.getElementById('fish-temp').value);
+    form.append('top_p', document.getElementById('fish-topp').value);
+    const r = await fetch(`${API}/api/tts/fish`, { method: 'POST', body: form });
+    if (!r.ok) throw new Error(await handleFishError(r));
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    audio.src = url; audio.classList.remove('hidden');
+    dl.href = url; dl.classList.remove('hidden');
+    status.textContent = 'تم! ✓';
+  } catch (e) {
+    status.textContent = 'خطأ: ' + e.message;
+  } finally {
+    setLoading(btn, false, '⭐ إنشاء (Fish)');
+  }
+};
+
+// ---------------------------------------------------------------- Voice Cloning action
+document.getElementById('clone-btn').onclick = async () => {
+  const btn = document.getElementById('clone-btn');
+  const status = document.getElementById('clone-status');
+  const audio = document.getElementById('clone-audio');
+  const dl = document.getElementById('clone-download');
+  const fileInput = document.getElementById('clone-file');
+  const refText = document.getElementById('clone-ref-text').value.trim();
+  const text = document.getElementById('clone-text').value.trim();
+
+  if (!fileInput.files[0]) { status.textContent = 'ارفع عينة صوتية أولاً.'; return; }
+  if (!refText) { status.textContent = 'اكتب نص العينة (ما يقوله الصوت في الملف).'; return; }
+  if (!text) { status.textContent = 'اكتب النص الجديد المراد نطقه.'; return; }
+
+  setLoading(btn, true, '🎭 استنسخ الصوت');
+  status.textContent = 'جاري الرفع والاستنساخ… (~10-30 ثانية)';
+  try {
+    const form = new FormData();
+    form.append('text', text);
+    form.append('reference_audio', fileInput.files[0]);
+    form.append('reference_transcript', refText);
+    form.append('speed', document.getElementById('clone-speed').value);
+    form.append('temperature', document.getElementById('clone-temp').value);
+    form.append('top_p', document.getElementById('clone-topp').value);
+    const r = await fetch(`${API}/api/tts/fish/clone`, { method: 'POST', body: form });
+    if (!r.ok) throw new Error(await handleFishError(r));
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    audio.src = url; audio.classList.remove('hidden');
+    dl.href = url; dl.classList.remove('hidden');
+    status.textContent = 'تم استنساخ الصوت ✓';
+  } catch (e) {
+    status.textContent = 'خطأ: ' + e.message;
+  } finally {
+    setLoading(btn, false, '🎭 استنسخ الصوت');
   }
 };
 </script>
